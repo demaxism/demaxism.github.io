@@ -132,8 +132,9 @@ layout: default
   <div class="date">
     Written on {{ page.date | date: "%B %e, %Y" }}
   </div>
-
+{% raw %}
   {% include disqus.html %}
+{% endraw %}
 </article>
 ```
 
