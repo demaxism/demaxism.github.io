@@ -86,8 +86,8 @@ $ git push -u origin master
 * 于是进入了Admin控制页面 https://mygoodsite.disqus.com/admin/install/， 左边菜单有 
     1. Accept Policy (确保它打勾了) 
     2. Install Disqus
-        Select Platform (现在在这儿)
-        Install Instructions
+        - Select Platform (现在在这儿)
+        - Install Instructions
     3. Configure Disqus
 
 * 先进Configure Disqus(https://mygoodsite.disqus.com/admin/install/settings/), 这里很重要的一步是在Website URL里填上GitHub Page的URL： `http://peter.github.io`
