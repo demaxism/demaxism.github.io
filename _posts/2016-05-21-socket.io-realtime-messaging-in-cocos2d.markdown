@@ -1,0 +1,224 @@
+---
+layout: post
+title:  "在cocos2d-js里实现socket.io前后端实时通信"
+date:   2016-05-21 22:15:31 +0900
+categories: tech
+---
+### Socket.io
+
+Socket.io是个用来做客户端和服务端的实时双向端口通信的javascript库，它分前端库部分和后台的node.js部分。
+用它适合实现聊天或多人对战等实时性强的任务，它会在客户端和后台间建立一个socket链接，双向data streaming或messaging; 相比之下，常见的HTTP请求的header相当大影响传输实时性，而且只能从客户端往服务器发请求，服务器无法实时向客户端推送。
+
+### 在cocos2d-js里使用socket.io
+cocos2d-x C++和javascript的测试代码里都有socket.io的例子。 我用的是版本3.7，js的例子在`js-test/src/ExtensionsTest/NetworkTest/SocketIOTest.js`里。 可运行一下会发现它里面提供的后台endpoint链接是坏的， 于是我这儿就自己搭一遍后台。
+
+Socket.io的最佳最简单的参考是官网上的聊天例子。
+    http://socket.io/get-started/chat/
+
+### 用到的库
+* cocos2d-x 3.7 （内带javascript版的）用于前端
+* node.js v0.10.29
+* socket.io v0.9.9 (这里我用0.9x版的，1.x版会有点兼容性问题)
+
+### 后台 Server side
+建立工作文件夹`server`, 在里面添加`package.json`定义node.js要用的包:
+* `package.json`
+
+```json
+{
+  "name": "socketio-server",
+  "version": "0.0.1",
+  "description": "for socket.io test",
+  "dependencies": {
+    "socket.io": "0.9.5"
+  }
+}
+```
+
+添加后台的node.js代码，这里建立连接并定义使用端口3000.
+* `socketio-server.js`
+
+```js
+server = require('http').Server();
+var socketIO = require('socket.io');
+var io = socketIO.listen(server);
+var counter = 0;
+
+io.sockets.on('connection', function(socket){
+  	console.log("connected!");
+
+    io.sockets.emit('connected', { value: "server ok" });
+  
+    socket.on('handshake', function(data){
+        console.log("receive handshake from client : " + data.value);
+    });
+
+    socket.on('message', function(data){
+      	console.log("receive message from client : " + data.value);
+      	io.sockets.emit('confirmed', { value: "confirmed from server" });
+  	});
+  	
+    socket.on('disconnect', function(){
+      	console.log("disconnect");
+  	});
+});
+server.listen(3000);
+
+setInterval(function() {
+    counter++;
+    console.log("Periodic broadcast:" + counter);
+    io.sockets.emit('broadcast', { value: "count:" + counter });
+}, 1000)
+```
+
+其实就是用on函数监听来自前端的事件然后设置回调就行了：
+
+```js
+socket.on('some signal', function(data){
+    console.log("receive message from client : " + data.value);
+});
+```
+向客户端发送信息用`emit`:
+
+```js
+io.sockets.emit('connected', { value: "server ok" });
+```
+
+### 前端 Front end
+建一个`SocketTest`的Layer:
+
+```js
+window.io;
+var SocketIO = SocketIO || window.io;
+
+var SocketTestLayer = cc.Layer.extend({
+    _statusLabel:null,
+    _broadcastLabel:null,
+    _sioclient:null,
+    ctor:function () {
+        //////////////////////////////
+        // 1. super init first
+        this._super();
+        this.initLayer();
+    },
+    initLayer:function() {
+
+        var menuRequest = new cc.Menu();
+        menuRequest.setPosition(cc.p(0, 0));
+        this.addChild(menuRequest);
+
+        var vspace = 80;
+
+        // Test to create basic client in the default namespace
+        var labelSIOClient = new cc.LabelTTF("Open SocketIO Client", "Arial", 30);
+        var itemSIOClient = new cc.MenuItemLabel(labelSIOClient, this.onMenuSIOClientClicked, this);
+        itemSIOClient.attr({x:200, y:SCR_SIZE_H - 150});
+        menuRequest.addChild(itemSIOClient);
+
+        var labelMessage = new cc.LabelTTF("Send message", "Arial", 30);
+        var itemSendMessage = new cc.MenuItemLabel(labelMessage, this.onSendMessageClicked, this);
+        itemSendMessage.attr({x:200, y:SCR_SIZE_H - 150 - vspace});
+        menuRequest.addChild(itemSendMessage);
+
+        // label
+        this._broadcastLabel = new cc.LabelTTF("No broadcast", "Arial", 24);
+        this._broadcastLabel.attr({x:300, y:100});
+        this.addChild(this._broadcastLabel);
+    },
+    onSocketReceive: function(eventname, callback) {
+        this._sioclient.on(eventname, function(data) {
+            if (cc.sys.isMobile) {
+                var obj = JSON.parse(data);
+                data = obj.args[0];
+            }
+            callback(data);
+        });
+    },
+    socketEmit:function (eventname, data) {
+        if (cc.sys.isMobile) {
+            this._sioclient.emit(eventname, JSON.stringify([data]));
+        }
+        else {
+            this._sioclient.emit(eventname, data);
+        }
+    },
+    onMenuSIOClientClicked:function() {
+        this._sioclient = SocketIO.connect("http://192.168.0.5:3000");
+
+        this._sioclient.on("connected", function() {
+            cc.log("Connected");
+            var msg = "Hi I am client!";
+            this.emit("handshake", JSON.stringify([{value:msg}]));
+        });
+
+        this._sioclient.on("confirmed", function(data) {
+            cc.log("Receive from server: " + data.value + "@ " + new Date());
+        });
+
+        this.onSocketReceive("broadcast", function(data) {
+            var msg = "Receive broadcast: " + data.value;
+            cc.log(msg);
+            this._broadcastLabel.setString(msg); // in order to access 'this', bind(this) is neccessary
+        }.bind(this));
+    },
+    onSendMessageClicked:function() {
+        cc.log("emit message");
+        var msg = "Message from client."
+        this.socketEmit("message", {value:"nice"});
+    }
+});
+
+var SocketTestScene = cc.Scene.extend({
+    onEnter:function () {
+        this._super();
+        var layer = new SocketTestLayer();
+        this.addChild(layer);
+    }
+});
+```
+
+假设后台服务器地址是192.168.0.5
+
+```js
+SocketIO.connect("http://192.168.0.5:3000");
+```
+
+前端的收发方式和后台的写法一样，用`on`监听后台来的消息用`emit`向后台推消息。
+但要注意浏览器和native的js-binding在解析消息的数据的行为有些区别，所以我写了`onSocketReceive`和`socketEmit`用来区分浏览器和native:
+
+```js
+    onSocketReceive: function(eventname, callback) {
+        this._sioclient.on(eventname, function(data) {
+            if (cc.sys.isMobile) {
+                var obj = JSON.parse(data);
+                data = obj.args[0];
+            }
+            callback(data);
+        });
+    },
+    socketEmit:function (eventname, data) {
+        if (cc.sys.isMobile) {
+            this._sioclient.emit(eventname, JSON.stringify([data]));
+        }
+        else {
+            this._sioclient.emit(eventname, data);
+        }
+    },
+```
+
+### 前后台调试
+在后台先用`npm`初始化关联包，然后启动node.js的代码：
+
+```shell-session
+cd server
+npm install
+node socketio-server.js
+```
+
+后台启动后，在浏览器以cocos-html5或在手机js-binding运行即可看到与后台的消息互动。
+
+
+### 其他参考链接
+* 一个Box2D的实时游戏 https://www.youtube.com/watch?v=z1_QpUkX2Gg
+* 关于Real time multiplayer in HTML的理论性文章 http://buildnewgames.com/real-time-multiplayer/
+* 用node.js, express, mongoDB的下棋游戏 https://github.com/benas/gamehub.io

@@ -13,11 +13,11 @@
 # you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: 明码纪 - Ming's Code Log
+title: 全栈航行日志 - demax's full stack voyage log
 email: demaxism[^.^]gmail.com
 description: > # this means to ignore newlines until "baseurl:"
-  七分熟的全栈开发者，上海-2006, 京都-2009, 东京-至今；
-  开发工作设计游戏，金融； 爱好90年代16位机游戏，FX（主要USD/JPY），公路自行车 
+  摸索中的全栈开发者，~2006 上海, ~2009 京都, 至今 东京；
+  开发工作涉及游戏，金融； 爱好90年代16位机游戏，FX（主要USD/JPY），公路自行车 
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://jpnode.demaxism.com/demo/home/" # the base hostname & protocol for your site
 twitter_username: demaxism
@@ -26,3 +26,4 @@ github_username:  demaxism
 # Build settings
 markdown: kramdown
 theme: minima
+comments: true
