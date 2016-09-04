@@ -19,13 +19,13 @@ description: > # this means to ignore newlines until "baseurl:"
   摸索中的全栈开发者，~2006 上海, ~2009 京都, 至今 东京；
   开发工作涉及游戏，金融； 爱好90年代16位机游戏，FX（主要USD/JPY），公路自行车 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://jpnode.demaxism.com/demo/home/" # the base hostname & protocol for your site
+url: "https://demaxism.github.io" # the base hostname & protocol for your site
 twitter_username: demaxism
 github_username:  demaxism
 
 # Build settings
 markdown: kramdown
-theme: minima
+#theme: minima
 comments: true
 
 # Enter your Disqus shortname (not your username) to enable commenting on posts
