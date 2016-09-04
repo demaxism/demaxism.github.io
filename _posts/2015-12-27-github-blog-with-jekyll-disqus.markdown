@@ -5,7 +5,7 @@ date:   2015-12-27 23:51:14 +0900
 categories: tech
 ---
 
-Github是很无敌的代码库，其实还可以做免费的博客空间。 这里其实用到的是GitHub的Pages功能，可以markdown写简洁高雅的技术博。
+Github是很无敌的代码库，其实还可以做免费的博客空间。 这里其实用到的是GitHub的Pages功能，可以用markdown写简洁高雅的技术博。
 
 ### GitHub Pages
 
@@ -77,7 +77,7 @@ $ git push -u origin master
 
 这里我用Disqus的留言javascript API实现评论。 其实Disqus不但提供评论的API，而且能将流量转成现金给发布者，这也是他们的广告的业务。具体参见他们的网页https://disqus.com/how/
 
-* 首先创建一个Disqus的账户，会要确认邮箱。
+* 首先创建一个Disqus的账户，比如用户名peter。
 
 * 注册完后点左上角的Disqus logo，跳到页面问'I want to comment on sites'和'I want to install Disqus on my site', 选第二个，跳到创建网站页面https://disqus.com/admin/create/
 
@@ -96,7 +96,7 @@ $ git push -u origin master
 
 * 进入了Universal Code install instructions页面(https://mygoodsite.disqus.com/admin/install/platforms/universalcode/), 这里的第一段 'Place the following code where you'd like Disqus to load'里写的HTML/JavaScript就是我们要的代码。
 
-添加路径和文件`_includes/disqus.html`, 参照上面页面里的Javascript加入以下代码，注意替换掉`s.src = '//https-demaxism-github-io.disqus.com/embed.js'`:
+添加路径和文件`_includes/disqus.html`, 参照上面页面里的Javascript加入以下代码，注意根据自己的实际URL替换掉`s.src = '//https-peter-github-io.disqus.com/embed.js'`:
 
 ```html
 {% if site.disqus %}
@@ -105,7 +105,7 @@ $ git push -u origin master
 <script>
 (function() { // DON'T EDIT BELOW THIS LINE
     var d = document, s = d.createElement('script');
-    s.src = '//https-demaxism-github-io.disqus.com/embed.js';
+    s.src = '//https-peter-github-io.disqus.com/embed.js';
     s.setAttribute('data-timestamp', +new Date());
     (d.head || d.body).appendChild(s);
 })();
@@ -142,7 +142,7 @@ layout: default
 
 ```yaml
 comments: true
-disqus: demaxism 
+disqus: peter
 ```
 
 这里disqus后面写的是Disqus的用户名，在setting页面(https://disqus.com/home/settings/account/)里的Username
