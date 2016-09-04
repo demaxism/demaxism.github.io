@@ -143,6 +143,7 @@ layout: default
 ```yaml
 comments: true
 disqus: peter
+url: "https://peter.github.io" # the base hostname & protocol for your site
 ```
 
 这里disqus后面写的是Disqus的用户名，在setting页面(https://disqus.com/home/settings/account/)里的Username
